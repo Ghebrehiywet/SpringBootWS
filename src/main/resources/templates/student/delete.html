@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" layout:decorate="~{layouts/dashboard_layout}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Delete Student Page</title>
+    <!--    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+
+    <script>
+        var postApp = angular.module('postApp', []);
+        postApp.config(['$locationProvider', function ($locationProvider) {
+            // In order to get the query string from the
+            // $location object, it must be in HTML5 mode.
+            $locationProvider.html5Mode(true);
+        }]);
+        //        app.controller( 'MyController', [ '$scope', '$location', function( $scope, $location ) { etc..
+
+        postApp.controller('postController', function ($scope, $http, $location) {
+            let urlValue = "";
+
+            debugger;
+            // Example - http://my.site.com/?myparam=33
+            if ($location.search().hasOwnProperty('id')) {
+                var myvalue = $location.search()['id'];
+                urlValue = myvalue;
+            }
+
+            $scope.displayForm = false;
+            $scope.student = {};
+            $scope.submitForm = function () {
+                $http({
+                    method: 'DELETE',
+                    url: 'http://localhost:9999/student/delete',
+                    data: $scope.student,
+                    headers: {'Content-Type': 'application/json'}
+                })
+                    .success(function (data) {
+                        debugger;
+                        if (data.errors) {
+                            $scope.errors = data.errors;
+                            $scope.success = false;
+                        } else {
+                            $scope.success = true;
+                            $scope.message = data.firstName;
+                            $scope.displayForm = false;
+                        }
+                    })
+                    .error(function (data) {
+                        debugger;
+                        $scope.errors = data.errors;
+                        $scope.success = false;
+                    });
+            };
+
+            $http.get("http://localhost:9999/student/list/" + urlValue)
+                .then(function (response) {
+                    debugger;
+                    $scope.student = response.data;
+                    if(response.data != null && response.data != "")
+                        $scope.displayForm = true;
+                }).catch(function (data) {
+                });
+
+            //$window.location.href = '/index';
+        });
+    </script>
+</head>
+
+<body>
+<div class="col" layout:fragment="main-content">
+
+    <div class="container" ng-app="postApp" ng-controller="postController">
+        <div class="col-sm-8 col-sm-offset-2">
+
+            <!-- This line is necessary to support $location HTML5 mode (for query string parameters). -->
+            <base href="/">
+
+            <div ng-if="success">
+                <p class="alert alert-danger">
+                    <b>
+                        Student is Deleted successfully!
+                    </b>
+                </p>
+            </div>
+
+            <div ng-if="errors != null && !success">
+                <ul class="alert alert-danger">
+                    <li ng-repeat="error in errors">
+                        <span>{{ error }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div ng-if="displayForm">
+                <!-- FORM -->
+                <form name="studentForm" ng-submit="submitForm()">
+                    <input type="hidden" name="studentId" class="form-control" ng-model="student.studentId">
+                    <input type="hidden" name="studentNumber" class="form-control" ng-model="student.studentNumber">
+                    <input type="hidden" name="firstName" class="form-control" ng-model="student.firstName">
+                    <input type="hidden" name="middleName" class="form-control" ng-model="student.middleName">
+                    <input type="hidden" name="lastName" class="form-control" ng-model="student.lastName">
+                    <input type="hidden" name="cgpa" class="form-control" ng-model="student.cgpa">
+                    <input type="hidden" name="enrollmentDate" class="form-control" ng-model="student.enrollmentDate">
+                    <input type="hidden" name="international" class="form-control" ng-model="student.international">
+
+                    <div class="form-group">
+                        <label>Student Number : </label>
+                        <label> <b>{{student.studentNumber}}</b></label>
+                    </div>
+                    <div class="form-group">
+                        <label>First Name : </label>
+                        <label> <b>{{student.firstName}}</b></label>
+                    </div>
+                    <div class="form-group">
+                        <label>Middle Name : </label>
+                        <label> <b>{{student.middleName}}</b></label>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name : </label>
+                        <label> <b>{{student.lastName}}</b></label>
+                    </div>
+                    <div class="form-group">
+                        <label>CPGA : </label>
+                        <label> <b>{{student.cgpa}}</b></label>
+                    </div>
+                    <div class="form-group">
+                        <label>Enrollment Date : </label>
+                        <label> <b>{{student.enrollmentDate}}</b></label>
+                    </div>
+                    <div class="form-group">
+                        <label>International : </label>
+                        <label> <b>{{student.international}}</b></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>

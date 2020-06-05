@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.w3.org/1999/xhtml" layout:decorate="~{layouts/dashboard_layout}"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Student Page</title>
+    <!--    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>-->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+
+
+    <script>
+        var postApp = angular.module('postApp', []);
+        postApp.config( [ '$locationProvider', function( $locationProvider ) {
+            // In order to get the query string from the
+            // $location object, it must be in HTML5 mode.
+            $locationProvider.html5Mode( true );
+        }]);
+
+        postApp.controller('postController', function ($scope, $http, $location) {
+            let urlValue = "";
+
+            debugger;
+            // Example - http://my.site.com/?myparam=33
+            if ($location.search().hasOwnProperty('id')) {
+                var myvalue = $location.search()['id'];
+                urlValue = myvalue;
+            }
+
+            $scope.student = {};
+            $scope.submitForm = function () {
+                $http({
+                    method: 'PUT',
+                    url: 'http://localhost:9999/student/edit',
+                    data: $scope.student,
+                    headers: {'Content-Type': 'application/json'}
+                })
+                    .success(function (data) {
+                        debugger;
+                        if (data.errors) {
+                            // $scope.errorName = data.errors.name;
+                            // $scope.errorUserName = data.errors.username;
+                            // $scope.errorEmail = data.errors.email;
+
+                            $scope.errors = data.errors;
+                            $scope.success = false;
+                        } else {
+                            $scope.success = true;
+                            $scope.message = data.firstName;
+                        }
+                    })
+                    .error(function (data) {
+                        debugger;
+                        $scope.errors = data.errors;
+                        $scope.success = false;
+                    });
+            };
+
+            $http.get("http://localhost:9999/student/list/" + urlValue)
+                .then(function (response) {
+                    $scope.student = response.data;
+                });
+        });
+    </script>
+</head>
+
+<body>
+<div class="col" layout:fragment="main-content">
+
+    <div class="container" ng-app="postApp" ng-controller="postController">
+        <div class="col-sm-8 col-sm-offset-2">
+
+            <!-- This line is necessary to support $location HTML5 mode (for query string parameters). -->
+            <base href="/">
+
+            <div ng-if="success">
+                <p class="alert alert-success">
+                    <b>
+                        {{message}} is updated successfully!
+                    </b>
+                </p>
+            </div>
+            <div ng-if="errors != null && !success">
+                <ul  class="alert alert-danger">
+                    <li ng-repeat="error in errors">
+                        <span>{{ error }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- FORM -->
+            <form name="studentForm" ng-submit="submitForm()">
+                <input type="hidden" name="studentId" class="form-control" ng-model="student.studentId">
+                <div class="form-group">
+                    <label>Student Number</label>
+                    <input type="text" name="studentNumber" class="form-control" ng-model="student.studentNumber">
+                    <span ng-show="errorName">{{errorName}}</span>
+                </div>
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="firstName" class="form-control" ng-model="student.firstName">
+                    <span ng-show="errorUserName">{{errorUserName}}</span>
+                </div>
+                <div class="form-group">
+                    <label>Middle Name</label>
+                    <input type="text" name="middleName" class="form-control" ng-model="student.middleName">
+                    <span ng-show="errorUserName">{{errorUserName}}</span>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="lastName" class="form-control" ng-model="student.lastName">
+                    <span ng-show="errorUserName">{{errorUserName}}</span>
+                </div>
+                <div class="form-group">
+                    <label>CPGA</label>
+                    <input type="number" name="cgpa" class="form-control" ng-model="student.cgpa">
+                    <span ng-show="errorUserName">{{errorUserName}}</span>
+                </div>
+
+                <div class="form-group">
+                    <label>Enrollment Date</label>
+                    <input type="date" name="enrollmentDate" class="form-control" ng-model="student.enrollmentDate">
+                    <span ng-show="errorUserName">{{errorUserName}}</span>
+                </div>
+                <div class="form-group">
+                    <label>Is international?</label>
+                    <select class="form-control" ng-model="student.international">
+                        <option value=""> -- Select One --</option>
+                        <option value=true>Yes</option>
+                        <option value=false>No</option>
+                    </select>
+                    <span ng-show="errorUserName">{{errorUserName}}</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+</html>
